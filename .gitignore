@@ -1,0 +1,19 @@
+# Ignore all .log files
+*.log
+
+# Ignore node_modules directory in any subdirectories
+node_modules/
+
+# Ignore the build directory
+build/
+
+# Ignore all .pdf files in the doc/ directory
+doc/**/*.pdf
+
+# Ignore a specific file
+config/secret_config.yml
+
+*.pyc
+*.pyo
+__pycache__/
+
