@@ -9,6 +9,11 @@ app = FastAPI()
 async def root():
     return {"message": "Hello World"}
 
+@app.get("/fetch/")
+def chat(): 
+    
+    return {"message": "Hello World"}
+
 @app.get("/chat/")
 def chat(): 
 

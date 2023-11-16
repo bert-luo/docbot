@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import re
 
-def create_document(): 
+def process_document(): 
     '''
     processes string of html into a document ready to be stored in a vector DB
     TODO: remove links, get headings, text, and code
@@ -24,9 +24,8 @@ def web_crawler(url, max_pages=1):
             return
 
         try:
-            response = requests.get(current_url)
             visited_urls.add(current_url)
-
+            response = requests.get(current_url)
             if response.status_code == 200:
                 soup = BeautifulSoup(response.text, 'html.parser')
                 #print(soup.get_text())
