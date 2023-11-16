@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 import os
 import requests
 from bs4 import BeautifulSoup
+from prompt import base_prompt
 
 
 load_dotenv()
@@ -21,17 +22,20 @@ def embed_texts(texts: list[str]):
     )
     return response
 
-def chat_completion(query:str, history): 
+def chat_completion(query:str, history: list[dict]): 
     '''
     Given user message, message history, and vector DB, use cohere connector mode and return the api response
     '''
+    # TODO: fetch docs from weaviate, either by connector mode or hybrid search
+    docs = []
 
-    # TODO: connect weaviate, either by connector mode or hybrid search
-    prompt = ''
+    prompt = base_prompt + query
     response = co.chat(  
         prompt,
         model='command',   # -nightly
         #max_tokens=200, # This parameter is optional. 
+        documents=docs,
+        chat_history=history,
         temperature=0.5
     )
 
@@ -92,7 +96,7 @@ if __name__ == "__main__":
         </code>
     </response>
 
-    based on these guidelines, please try to prompts as best as you can.
+    based on these guidelines, please try to answer future prompts as best as you can.
     """
 
     #print(base_prompt)
