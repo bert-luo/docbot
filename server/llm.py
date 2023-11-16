@@ -10,22 +10,36 @@ load_dotenv()
 COHERE_API_KEY = os.getenv("COHERE_API_KEY")
 co = cohere.Client(COHERE_API_KEY)
 
-def chat_completion(query, history): 
+def embed_texts(texts: list[str]): 
+    '''
+    embed texts before storing them in vector DB
+    '''
+    response = co.embed(
+        texts=texts,
+        model='embed-english-v3.0',
+        input_type='search_document'
+    )
+    return response
+
+def chat_completion(query:str, history): 
     '''
     Given user message, message history, and vector DB, use cohere connector mode and return the api response
     '''
 
     # TODO: connect weaviate, either by connector mode or hybrid search
+    prompt = ''
     response = co.chat(  
-            prompt,
-            model='command',   # -nightly
-            #max_tokens=200, # This parameter is optional. 
-            temperature=0.5)
-
+        prompt,
+        model='command',   # -nightly
+        #max_tokens=200, # This parameter is optional. 
+        temperature=0.5
+    )
 
     return response
 
+
 if __name__ == "__main__":
+
     url = "https://pandas.pydata.org/docs/reference/api/pandas.concat.html"
     response = requests.get(url)
     #soup = BeautifulSoup(response.text, 'html.parser')
@@ -83,7 +97,7 @@ if __name__ == "__main__":
 
     #print(base_prompt)
 
-    if True:
+    if False:
         test_url = "https://pandas.pydata.org/docs/reference/api/pandas.unique.html"
         test_response = requests.get(test_url)
         test_document = test_response.text
