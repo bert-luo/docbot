@@ -6,7 +6,6 @@ import requests
 from bs4 import BeautifulSoup
 
 from prompt import base_prompt
-from db import query_weaviate
 
 
 load_dotenv()
@@ -24,7 +23,7 @@ def embed_texts(texts: list[str]):
     )
     return response
 
-def process_weave_response(response:str,library:str):
+def process_weave_response(response:str, library:str):
     docs = []
     # TODO: check if the titles are appropriate
     for i in response['data']['Get'][library]:
@@ -34,7 +33,7 @@ def process_weave_response(response:str,library:str):
         docs.append(temp)
     return docs
         
-def chat_completion(query:str, library:str, history: list[dict]): 
+def chat_completion(query:str, library:str, history:list[dict]=None): 
     '''
     Use RAG (Cohere + Weaviate) to generate chatbot response
 
@@ -43,15 +42,18 @@ def chat_completion(query:str, library:str, history: list[dict]):
     feed into cohere's chat endpoint and return its response
     '''
     # TODO: fetch docs from weaviate, either by connector mode or hybrid search
-    
-    weaviate_response = query_weaviate(query, library)
-    docs = process_weave_response(weaviate_response)
+    from db import query_weaviate
 
-    prompt = base_prompt + query
+    weaviate_response = query_weaviate(query, library)
+    docs = process_weave_response(weaviate_response, library)
+    print(docs)
+
+    prompt =  base_prompt + query
     response = co.chat(  
         prompt,
         model='command',   # -nightly
         #max_tokens=200, # This parameter is optional. 
+        #preamble=base_prompt, TODO: investigate if possible
         documents=docs,
         chat_history=history,
         temperature=0.5
@@ -61,65 +63,6 @@ def chat_completion(query:str, library:str, history: list[dict]):
 
 
 if __name__ == "__main__":
-
-    url = "https://pandas.pydata.org/docs/reference/api/pandas.concat.html"
-    response = requests.get(url)
-    #soup = BeautifulSoup(response.text, 'html.parser')
-    sample_document = response.text
-
+    query = 'what kind of animal are pythons?'
+    print('RESPONSE: ', chat_completion(query, 'Document'))
     
-
-    #print(base_prompt)
-
-    if False:
-        test_url = "https://pandas.pydata.org/docs/reference/api/pandas.unique.html"
-        test_response = requests.get(test_url)
-        test_document = test_response.text
-
-        prompt = base_prompt + """
-        <prompt> 
-            How do I get the unique values in my pandas df?
-            <context>
-            <document>
-                {test_document}
-            </document>
-        </context>
-        </prompt>
-        """
-
-        response = co.chat(  
-            prompt,
-            model='command',   # -nightly
-            #prompt = prompt,  
-            #max_tokens=200, # This parameter is optional. 
-            temperature=0.5)
-
-        #intro_paragraph = response.generations[0].text
-        answer = response.text
-
-        print(answer)
-
-
-    if False: # attempt at intent classifier which I don't think we'll do anymore
-        examples=[
-        Example("What parameters does this function take", "explain"),
-        Example("Is there a function that does this?", "explain"),
-
-        Example("are there docs that explain ", "explain"),
-        Example("What parameters does _ take", "explain"),
-
-        Example("write a script that does this", "write code"),
-        Example("create a function that does this", "write code"),
-        
-        ]
-        inputs=[
-        "Am I still able to return my order?",
-        "When can I expect my package?",
-        "Do you ship overseas?",
-        ]
-
-        response = co.classify(
-        inputs=inputs,
-        examples=examples,
-        )
-        print(response)

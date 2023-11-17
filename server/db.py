@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 import os
 import json
 
-from llm import embed_texts
+from llm import embed_texts # TODO: put inside function
 
 load_dotenv()
 WEAVIATE_API_KEY = os.getenv("WEAVIATE_API_KEY")
@@ -80,7 +80,7 @@ def query_weaviate(query: str, index_name: str):
         client.query
         .get(index_name, ["text", "url"])
         .with_near_text(nearText)
-        #.with_limit(3)
+        #.with_limit(2)
         .do()
     )
     return response
