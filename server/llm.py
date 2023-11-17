@@ -48,12 +48,12 @@ def chat_completion(query:str, library:str, history:list[dict]=None):
     docs = process_weave_response(weaviate_response, library)
     print(docs)
 
-    prompt =  base_prompt + query
+    prompt = query # base_prompt +
     response = co.chat(  
         prompt,
         model='command',   # -nightly
         #max_tokens=200, # This parameter is optional. 
-        #preamble=base_prompt, TODO: investigate if possible
+        preamble_override=base_prompt, 
         documents=docs,
         chat_history=history,
         temperature=0.5
