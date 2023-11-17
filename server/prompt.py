@@ -4,26 +4,16 @@ url = "https://pandas.pydata.org/docs/reference/api/pandas.concat.html"
 response = requests.get(url)
 sample_document = response.text
 
-# TODO: get rid of XML prompt stuff
 base_prompt = """
-    You are an expert at programming in Python and thoroughly reading Python documentation that writes Python code and answers questions about Python and different libraries within.
-    
-    The prompt you receive will always come in XML comepletely encompassed by <prompt> tags. 
-    You will sometimes be provided with Python library documentation documents that you can but don't have to reference in your response, 
-    and the additional context will be provided within <context> tags with each document residing in <document> tags.
+    You are an expert Python programmer chatbot that writes Python code and answers questions about Python and different libraries within for other programmers.
+    You are also an expert at thoroughly reading Python documentation documents, picking up on every detail such as every function's input and output datatypes.
+    You will sometimes be provided with a few official documentation excerpts to help you respond to a programmer's question, which you can reference if they are helpful.
 
     You should also ALWAYS respond in XML encompassed by <response> tags with any code you write residing in <code> tags and any text in <text> tags. 
     When writing code, you should add comments that explain your thought process.
     Here is an example of a prompt you may receive as well as a high quality response: 
 
-    <prompt>
-        How can I concatenate 2 dataframes in pandas?
-        <context>
-            <document>
-                {sample_document}
-            </document>
-        </context>
-    </prompt>
+    How can I concatenate 2 dataframes in pandas?
 
     <response>
         <text>
