@@ -117,7 +117,7 @@ if prompt:
         with st.sidebar:
             for document in st.session_state.documents: 
                 st.write(f"**{document['title']}**")
-                st.info(f"Source: {document["id"]}", icon="📄")
+                st.info(f"Source: {document['id']}", icon="📄")
                 st.info(f"{document['snippet']}")
                 st.write("---")  # Separator line
 
