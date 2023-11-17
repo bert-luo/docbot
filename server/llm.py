@@ -31,12 +31,11 @@ def chat_completion(query:str, library:str, history:list[dict]=None):
     use query to retrieve relevant documents from Weaviate cluster,
     feed into cohere's chat endpoint and return its response
     '''
-    # TODO: fetch docs from weaviate, either by connector mode or hybrid search
     from db import query_weaviate
     weaviate_response = query_weaviate(query, library)
     try: 
         docs = response['data']['Get'][library]
-    else: 
+    except: 
         docs = []
 
     prompt = query # base_prompt +
@@ -44,6 +43,7 @@ def chat_completion(query:str, library:str, history:list[dict]=None):
         prompt,
         model='command',   # -nightly
         #max_tokens=200, # This parameter is optional. 
+        #return_preamble=True,
         preamble_override=base_prompt, 
         documents=docs,
         chat_history=history,
@@ -54,7 +54,7 @@ def chat_completion(query:str, library:str, history:list[dict]=None):
 
 if __name__ == "__main__":
     query = 'what kind of animal are pythons?'
-    chat_completion(query, 'Document')
-    #print('RESPONSE: ', chat_completion(query, 'Document'))
+    #chat_completion(query, 'Document')
+    print('RESPONSE: ', chat_completion(query, 'Document'))
     #print(embed_texts(['test 1', 'i am gay']))
     
