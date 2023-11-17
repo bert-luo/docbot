@@ -75,7 +75,10 @@ def query_weaviate(query: str, index_name: str):
     Vector Search weaviate database with user query
     '''
     client = get_weaviate_client()
-    nearText = {"concepts": [query]}
+    nearText = {
+        "concepts": [query],
+        "certainty": 0.7
+        }
     response = (
         client.query
         .get(index_name, ["text", "url"])
