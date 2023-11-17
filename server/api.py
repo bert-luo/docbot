@@ -11,6 +11,7 @@ app = FastAPI()
 class ChatRequest(BaseModel):
     message: str
     history: list[dict]
+    library: str
 
 @app.get("/")
 async def root():
@@ -26,5 +27,5 @@ def create_documents():
 @app.get("/chat/")
 def chat(request: ChatRequest): 
     # given query, use co.chat connector mode
-    response = chat_completion(request.message, request.history)
+    response = chat_completion(request.message, request.library, request.history)
     return response

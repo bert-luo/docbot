@@ -4,7 +4,9 @@ from dotenv import load_dotenv
 import os
 import requests
 from bs4 import BeautifulSoup
+
 from prompt import base_prompt
+from db import query_weaviate
 
 
 load_dotenv()
@@ -22,7 +24,7 @@ def embed_texts(texts: list[str]):
     )
     return response
 
-def chat_completion(query:str, history: list[dict]): 
+def chat_completion(query:str, library:str, history: list[dict]): 
     '''
     Use RAG (Cohere + Weaviate) to generate chatbot response
 
@@ -31,7 +33,9 @@ def chat_completion(query:str, history: list[dict]):
     feed into cohere's chat endpoint and return its response
     '''
     # TODO: fetch docs from weaviate, either by connector mode or hybrid search
-    docs = []
+    
+    weaviate_response = query_weaviate(query, library)
+    docs = [] # TODO: process weaviate response
 
     prompt = base_prompt + query
     response = co.chat(  
