@@ -17,7 +17,7 @@ def load_dataset(library_name:str):
 
 def create_documents(library_name:str):
     '''Assemble, embed, and store document from Fleet data into weaviate DB''' 
-    print('creating new vector index: {library_name}_test') # TODO: change when done testing
+    print(f'creating new vector index: {library_name}') # TODO: change when done testing
     create_weaviate_index(library_name)
     client = get_weaviate_client()
     client.batch.configure(
@@ -38,10 +38,18 @@ def create_documents(library_name:str):
         for properties, embedding in tqdm(zip(objects, embeddings)):
             batch.add_data_object(properties, library_name, None, embedding)
 
+    result = (
+        client.query.aggregate(library_name)
+        .with_fields("meta { count }")
+        .do()
+    )
+    print("Object count: ", result["data"]["Aggregate"][library_name])
 
 if __name__ == "__main__":
     #download_dataset('langchain')
-    create_documents('langchain')
+    #client = get_weaviate_client()
+    #client.schema.delete_class("Langchain") 
+    create_documents('Langchain')
 
     '''df = load_dataset('langchain')
     print(df.columns)
