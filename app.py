@@ -6,8 +6,12 @@ import json
 
 FASTAPI_BASE_URL = "http://localhost:8000"
 
-def fetch_data_from_api(endpoint):
-    response = requests.get(f"{FASTAPI_BASE_URL}/{endpoint}")
+def fetch_data_from_api(endpoint, payload=None):
+    if payload:
+        response = requests.post(f"{FASTAPI_BASE_URL}/{endpoint}", json=payload)
+    else:
+        response = requests.get(f"{FASTAPI_BASE_URL}/{endpoint}")
+
     if response.status_code == 200:
         return response.json()
     else:
@@ -98,52 +102,64 @@ def wrap_in_xml(text, start, end, num):
 # Dropdown for selecting a library
 library = st.selectbox(
     "Select the library",
-    ("langchain", "pandas", "pytorch")
+    ("langchain","Document", "pandas", "pytorch")
 )
 
 # Initialize chat messages in session state if not present
 if "messages" not in st.session_state:
-    st.session_state.messages = [{"role": "assistant", "content": "How may I assist you today?"}]
+    st.session_state.messages = [{"role": "assistant", "message": "How may I assist you today?"}]
 
 # User input for chat
 prompt = st.chat_input("Enter your message")
     
 # Process the prompt if it's not None
 if prompt:
-    data = fetch_data_from_api("chat/")  
+    # Construct the request payload
+    chat_request_payload = {
+        "message": prompt,
+        "history": st.session_state.messages,
+        "library": library
+    }
+
+    # Send the request to the FastAPI server
+    data = fetch_data_from_api("chat/", payload=chat_request_payload)
+
+    # Process the response...
+    print(data)
+    print("ASdasd")
     json_data = json.loads(data)
 
-    if "documents" in st.session_state and "citations" in json_data:
-        with st.sidebar:
-            for document in st.session_state.documents: 
-                st.write(f"**{document['title']}**")
-                st.info(f"Source: {document['id']}", icon="📄")
-                st.info(f"{document['snippet']}")
-                st.write("---")  # Separator line
+    # if "documents" in st.session_state and "citations" in json_data:
+    #     with st.sidebar:
+    #         for document in st.session_state.documents: 
+    #             st.write(f"**{document['title']}**")
+    #             st.info(f"Source: {document['id']}", icon="📄")
+    #             st.info(f"{document['snippet']}")
+    #             st.write("---")  # Separator line
 
-    if "documents" not in st.session_state and "citations" in json_data:
-        st.session_state.documents = json_data["documents"]
-        with st.sidebar:
-            for document in st.session_state.documents: 
-                st.write(f"**{document['title']}**")
-                st.info(f"Source: {document['id']}", icon="📄")
-                st.info(f"{document['snippet']}")
-                st.write("---")  # Separator line
+    # if "documents" not in st.session_state and "citations" in json_data:
+    #     st.session_state.documents = json_data["documents"]
+    #     with st.sidebar:
+    #         for document in st.session_state.documents: 
+    #             st.write(f"**{document['title']}**")
+    #             st.info(f"Source: {document['id']}", icon="📄")
+    #             st.info(f"{document['snippet']}")
+    #             st.write("---")  # Separator line
 
-    st.session_state.messages.append({"role": "user", "content": prompt})
+    # st.session_state.messages.append({"role": "user", "content": prompt})
 
-    # Instead of adding the response as normal text, format it as code
-    # st.session_state.messages.append({"role": "assistant", "content": data["message"]})
-    if "citations" in json_data:
-        for citation in json_data["citations"]:
-            start = citation["start"]
-            end = citation["end"]
-            wrapped_text = wrap_in_xml(json_data['text'], start, end, 1)
-            print(wrapped_text)
-        st.session_state.messages.append({"role": "assistant", "content": json_data['text']})
-    else:
-        st.session_state.messages.append({"role": "assistant", "content": json_data['text']})
-    st.session_state.prompt = ""
+    # # Instead of adding the response as normal text, format it as code
+    # # st.session_state.messages.append({"role": "assistant", "content": data["message"]})
+    # if "citations" in json_data:
+    #     for citation in json_data["citations"]:
+    #         start = citation["start"]
+    #         end = citation["end"]
+    #         wrapped_text = wrap_in_xml(json_data['text'], start, end, 1)
+    #         print(wrapped_text)
+    #     st.session_state.messages.append({"role": "assistant", "content": json_data['text']})
+    # else:
+    #     st.session_state.messages.append({"role": "assistant", "content": json_data['text']})
+    # st.session_state.prompt = ""
 
 def display_xml_content(xml_content):
     root = ET.fromstring(xml_content)
@@ -160,6 +176,6 @@ def display_xml_content(xml_content):
 
 # Display chat messages
 for message in st.session_state.messages:
-    if message["role"] == "assistant" and '<response>' in message["content"]:
+    if message["role"] == "assistant" and '<response>' in message["message"]:
         with st.chat_message(message["role"]):
             display_xml_content(message["content"])

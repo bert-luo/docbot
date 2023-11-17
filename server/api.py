@@ -24,8 +24,15 @@ def create_documents():
     # create new index and store them in weaviate 
     return {"message": "Hello World"}
 
-@app.get("/chat/")
+@app.post("/chat/")
 def chat(request: ChatRequest): 
     # given query, use co.chat connector mode
+
+    msg = request.message
+    lib = request.library
+    history = request.history
     response = chat_completion(request.message, request.library, request.history)
+    print("api response: ", response)
+
+
     return response

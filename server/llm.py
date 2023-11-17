@@ -25,6 +25,7 @@ def embed_texts(texts: list[str]):
 
 def process_weave_response(response:str, library:str):
     docs = []
+
     # TODO: check if the titles are appropriate
     for i in response['data']['Get'][library]:
         temp = {}
@@ -43,10 +44,8 @@ def chat_completion(query:str, library:str, history:list[dict]=None):
     '''
     # TODO: fetch docs from weaviate, either by connector mode or hybrid search
     from db import query_weaviate
-
     weaviate_response = query_weaviate(query, library)
     docs = process_weave_response(weaviate_response, library)
-    print(docs)
 
     prompt =  base_prompt + query
     response = co.chat(  
@@ -58,7 +57,6 @@ def chat_completion(query:str, library:str, history:list[dict]=None):
         chat_history=history,
         temperature=0.5
     )
-
     return response
 
 
