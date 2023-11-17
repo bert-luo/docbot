@@ -8,22 +8,24 @@ from llm import embed_texts
 load_dotenv()
 WEAVIATE_API_KEY = os.getenv("WEAVIATE_API_KEY")
 COHERE_API_KEY = os.getenv("COHERE_API_KEY")
-auth_config = weaviate.AuthApiKey(api_key=WEAVIATE_API_KEY)
 
-client = weaviate.Client(
-  url="https://cohere-hack-imnt0qiv.weaviate.network",
-  auth_client_secret=auth_config, 
-  additional_headers={
-        "X-Cohere-Api-Key": COHERE_API_KEY,
-    }
+def get_weaviate_client(): 
+    auth_config = weaviate.AuthApiKey(api_key=WEAVIATE_API_KEY)
+    client = weaviate.Client(
+    url="https://cohere-hack-imnt0qiv.weaviate.network",
+    auth_client_secret=auth_config, 
+    additional_headers={
+            "X-Cohere-Api-Key": COHERE_API_KEY,
+        }
+    )
+    if client.is_ready(): 
+        return client
+    return False
 
-)
-print("client ready: ", client.is_ready())
-
-if False:
+def create_weaviate_index(index_name: str): 
     document_schema = {
-        "class": "Document",
-        "description": "page or chunk of software documentation",
+        "class": index_name,
+        "description": f"page or chunk of software documentation for {index_name}",
         "vectorizer": "text2vec-cohere",
         "moduleConfig": {
             "text2vec-cohere": {
@@ -62,64 +64,23 @@ if False:
         ]
     }
 
-    client.schema.delete_all()
     client.schema.create_class(document_schema)
 
-    client.batch.configure(
-        batch_size=200,
-        dynamic=True,
-        timeout_retries=3,
-    )
+def add_documents(documents, index_name): 
+    # TODO: implement
+    return 
 
-    test_documents = [
-        "Rust is the most loved programming language",
-        "Python is an interpreted programming language", 
-        "Pythons are reptiles", 
-        "programming is a lucrative career in the 21st century"
-    ]
-    embeddings = embed_texts(test_documents)
-
-    with client.batch as batch:
-        for doc, embedding in zip(test_documents, embeddings):
-            properties = {
-            "text": doc,
-            "url": str(len(doc)),
-            }
-            vector = embedding
-
-            batch.add_data_object(properties, "Document", None, vector)
-
-    result = (
-        client.query.aggregate("Document")
-        .with_fields("meta { count }")
-        .do()
-    )
-    print("Object count: ", result["data"]["Aggregate"]["Document"])
-
-if False: # hybrid search
+def query_weaviate(query: str, index_name: str): 
+    '''
+    Vector Search weaviate database with user query
+    '''
+    client = get_weaviate_client()
+    nearText = {"concepts": [query]}
     response = (
         client.query
-        .get("Document", ["text", "url"])
-        .with_hybrid(
-            query="coding",
-            alpha=0
-        )
-        #.with_additional(["score", "explainScore"])
-        .with_limit(3)
-        .do()
-    )
-
-    print(json.dumps(response, indent=2))
-
-if True: # vector search
-    nearText = {"concepts": ["what type of animal are Pythons?"]}
-    response = (
-        client.query
-        .get("Document", ["text", "url"])
+        .get(index_name, ["text", "url"])
         .with_near_text(nearText)
         #.with_limit(3)
         .do()
     )
-
-    result = response['data']['Get']['Document']
-    print(result)
+    return response
