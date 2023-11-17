@@ -63,7 +63,7 @@ def create_weaviate_index(index_name: str):
         },
         ]
     }
-
+    client = get_weaviate_client()
     client.schema.create_class(document_schema)
 
 def add_documents(documents, index_name): 
@@ -77,7 +77,7 @@ def query_weaviate(query: str, index_name: str):
     client = get_weaviate_client()
     nearText = {
         "concepts": [query],
-        "certainty": 0.7
+        "certainty": 0.0
         }
     response = (
         client.query

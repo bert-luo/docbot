@@ -17,9 +17,9 @@ def load_dataset(library_name:str):
 
 def create_documents(library_name:str):
     '''Assemble, embed, and store document from Fleet data into weaviate DB''' 
-
+    print('creating new vector index: {library_name}_test') # TODO: change when done testing
+    create_weaviate_index(library_name)
     client = get_weaviate_client()
-    client.schema.create_class(document_schema)
     client.batch.configure(
         batch_size=200,
         dynamic=True,
@@ -27,29 +27,20 @@ def create_documents(library_name:str):
     )
 
     df = load_dataset(library_name)
-    for metadata in df['metadata'].values: 
-        properties =  {
-            'url': metadata['url'],
-            'text': metadata['text'],
-        }
-        if 'title' in metadata: 
-            properties['title'] = metadata['title']
-        else: 
-            properties['title'] = metadata['url']
-    
-    # TODO: integrate
-     with client.batch as batch:
-        for doc, embedding in zip(test_documents, embeddings):
-            properties = {
-            "text": doc,
-            "url": str(len(doc)),
-            }
-            vector = embedding
+    df = df.head(100) # TODO: delete when done testing
+    objects = [{'url': metadata['url'],'text': metadata['text']} for metadata in df['metadata'].values]
+    texts = [obj['text'] for obj in objects]
+    embeddings = embed_texts(texts)
+    print('embeddings created')
 
-            batch.add_data_object(properties, "Document", None, vector)
+    with client.batch as batch:
+        print('starting storage process...')
+        for properties, embedding in tqdm(zip(objects, embeddings)):
+            batch.add_data_object(properties, library_name, None, embedding)
 
 
 if __name__ == "__main__":
+    #download_dataset('langchain')
     create_documents('langchain')
 
     '''df = load_dataset('langchain')
