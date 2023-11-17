@@ -24,6 +24,16 @@ def embed_texts(texts: list[str]):
     )
     return response
 
+def process_weave_response(response:str,library:str):
+    docs = []
+    # TODO: check if the titles are appropriate
+    for i in response['data']['Get'][library]:
+        temp = {}
+        for j in i:
+            temp[j] = i[j]
+        docs.append(temp)
+    return docs
+        
 def chat_completion(query:str, library:str, history: list[dict]): 
     '''
     Use RAG (Cohere + Weaviate) to generate chatbot response
@@ -35,7 +45,7 @@ def chat_completion(query:str, library:str, history: list[dict]):
     # TODO: fetch docs from weaviate, either by connector mode or hybrid search
     
     weaviate_response = query_weaviate(query, library)
-    docs = [] # TODO: process weaviate response
+    docs = process_weave_response(weaviate_response)
 
     prompt = base_prompt + query
     response = co.chat(  
