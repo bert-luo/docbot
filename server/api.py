@@ -32,7 +32,5 @@ def chat(request: ChatRequest):
     lib = request.library
     history = request.history
     response = chat_completion(request.message, request.library, request.history)
-    print("api response: ", response)
-
 
     return response

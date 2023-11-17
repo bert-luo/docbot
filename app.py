@@ -125,41 +125,39 @@ if prompt:
     data = fetch_data_from_api("chat/", payload=chat_request_payload)
 
     # Process the response...
-    print(data)
-    print("ASdasd")
-    json_data = json.loads(data)
 
-    # if "documents" in st.session_state and "citations" in json_data:
-    #     with st.sidebar:
-    #         for document in st.session_state.documents: 
-    #             st.write(f"**{document['title']}**")
-    #             st.info(f"Source: {document['id']}", icon="📄")
-    #             st.info(f"{document['snippet']}")
-    #             st.write("---")  # Separator line
+    json_data = data
+    if "documents" in st.session_state and "citations" in json_data:
+        with st.sidebar:
+            for document in st.session_state.documents: 
+                st.write(f"**{document['title']}**")
+                st.info(f"Source: {document['id']}", icon="📄")
+                st.info(f"{document['snippet']}")
+                st.write("---")  # Separator line
 
-    # if "documents" not in st.session_state and "citations" in json_data:
-    #     st.session_state.documents = json_data["documents"]
-    #     with st.sidebar:
-    #         for document in st.session_state.documents: 
-    #             st.write(f"**{document['title']}**")
-    #             st.info(f"Source: {document['id']}", icon="📄")
-    #             st.info(f"{document['snippet']}")
-    #             st.write("---")  # Separator line
+    if "documents" not in st.session_state and "citations" in json_data:
+        st.session_state.documents = json_data["documents"]
+        with st.sidebar:
+            for document in st.session_state.documents: 
+                st.write(f"**{document['title']}**")
+                st.info(f"Source: {document['id']}", icon="📄")
+                st.info(f"{document['snippet']}")
+                st.write("---")  # Separator line
 
-    # st.session_state.messages.append({"role": "user", "content": prompt})
+    st.session_state.messages.append({"role": "user", "content": prompt})
 
-    # # Instead of adding the response as normal text, format it as code
-    # # st.session_state.messages.append({"role": "assistant", "content": data["message"]})
-    # if "citations" in json_data:
-    #     for citation in json_data["citations"]:
-    #         start = citation["start"]
-    #         end = citation["end"]
-    #         wrapped_text = wrap_in_xml(json_data['text'], start, end, 1)
-    #         print(wrapped_text)
-    #     st.session_state.messages.append({"role": "assistant", "content": json_data['text']})
-    # else:
-    #     st.session_state.messages.append({"role": "assistant", "content": json_data['text']})
-    # st.session_state.prompt = ""
+    # Instead of adding the response as normal text, format it as code
+    # st.session_state.messages.append({"role": "assistant", "content": data["message"]})
+    if "citations" in json_data:
+        for citation in json_data["citations"]:
+            start = citation["start"]
+            end = citation["end"]
+            wrapped_text = wrap_in_xml(json_data['text'], start, end, 1)
+            print(wrapped_text)
+        st.session_state.messages.append({"role": "assistant", "content": json_data['text']})
+    else:
+        st.session_state.messages.append({"role": "assistant", "content": json_data['text']})
+    st.session_state.prompt = ""
 
 def display_xml_content(xml_content):
     root = ET.fromstring(xml_content)
