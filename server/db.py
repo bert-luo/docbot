@@ -84,7 +84,7 @@ def query_weaviate(query: str, index_name: str):
         client.query
         .get(index_name, ["text", "url"])
         .with_near_text(nearText)
-        #.with_limit(2)
+        .with_limit(2)
         .do()
     )
     return response

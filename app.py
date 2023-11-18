@@ -3,6 +3,7 @@ import html
 import xml.etree.ElementTree as ET
 import requests
 import json
+import re
 
 FASTAPI_BASE_URL = "http://localhost:8500"
 
@@ -43,57 +44,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-json_data = '''
-{  
-    "response_id": "ea9eaeb0-073c-42f4-9251-9ecef5b189ef",  
-    "text": "<response>\\n    <text>I'm some text in a text element.</text>\\n    <code>print(\\"I'm some code in a code element.\\")</code>\\n    <text>Here's some more text after the code.</text>\\n</response>",  
-    "generation_id": "1b5565da-733e-4c14-9ff5-88d18a26da96",  
-    "token_count": {  
-        "prompt_tokens": 445,  
-        "response_tokens": 13,  
-        "total_tokens": 458,  
-        "billed_tokens": 20  
-    },  
-    "meta": {  
-        "api_version": {  
-            "version": "2022-12-06"  
-        }  
-    },  
-    "citations": [  
-        {  
-            "start": 2,  
-            "end": 15,  
-            "text": "Emperor penguins",  
-            "document_ids": [  
-                "doc_0"  
-            ]  
-        },  
-        {  
-            "start": 48,  
-            "end": 59,  
-            "text": "Antarctica.",  
-            "document_ids": [  
-                "doc_1"  
-            ]  
-        }  
-    ],  
-    "documents": [  
-        {  
-            "id": "doc_0",  
-            "title": "Tall penguins",  
-            "snippet": "Emperor penguins are the tallest.",  
-            "url": ""  
-        },  
-        {  
-            "id": "doc_1",  
-            "title": "Penguin habitats",  
-            "snippet": "Emperor penguins only live in Antarctica.",  
-            "url": ""  
-        }  
-    ],  
-    "search_queries": []  
-}
-'''
 def wrap_in_xml(text, start, end, num):
     return text[:end+1] + f"^[{num}]" + text[end+1:]
 
@@ -101,7 +51,7 @@ def wrap_in_xml(text, start, end, num):
 # Dropdown for selecting a library
 library = st.selectbox(
     "Select the library",
-    ("langchain","Document", "pandas", "pytorch")
+    ("Langchain","Document", "pandas", "pytorch")
 )
 
 # Initialize chat messages in session state if not present
@@ -120,15 +70,11 @@ if prompt:
         "library": library
     }
 
-    print("HISTORY: " + str(chat_request_payload['history']))
     # Send the request to the FastAPI server
-    print(chat_request_payload)
     data = fetch_data_from_api("chat/", payload=chat_request_payload)
-    print(data)
     # Process the response...
 
     json_data = data
-    print("JSON DATA " + str(json_data))
     if "documents" in st.session_state and json_data['citations'] != None:
         with st.sidebar:
             for document in st.session_state.documents: 
@@ -161,30 +107,28 @@ if prompt:
     #     st.session_state.messages.append({"role": "assistant", "content": json_data['text']})
     st.session_state.prompt = ""
 
-def display_xml_content(xml_content):
-    root = ET.fromstring(xml_content)
-    for elem in root:
-        if elem.tag == 'text':
-            # Directly display the text from <text> elements
-            st.markdown(html.unescape(elem.text))
-        elif elem.tag == 'code':
-            # Display the code within <code> elements in a code block
-            st.code(html.unescape(elem.text), language='python')
-        # Check if there is any text following the current element (elem.tail)
-        if elem.tail is not None:
-                st.write(html.unescape(elem.tail.strip()))
+def display_mixed_content(response):
+    # Regular expression to find code blocks
+    code_block_regex = re.compile(r'```(.*?)```', re.DOTALL)
+    code_blocks = code_block_regex.findall(response)
+    text_blocks = code_block_regex.split(response)
+
+    # Iterate through the text and code blocks, displaying each appropriately
+    for text, code in zip(text_blocks, code_blocks + ['']):
+        # print("TEXT : " + str(text))
+        # print("CODE : " + str(code))
+        if text.strip():
+            st.write(text.strip())
+        if code.strip():
+            st.code(code.strip(), language='python')
 
 # Display chat messages
 for message in st.session_state.messages:
-    print(message)
-    if message["role"] == "assistant" and "message" in message and'<response>' in message["message"]:
+    # print(message)
+    if message["role"] == "assistant":
         with st.chat_message(message["role"]):
-            display_xml_content(message["message"])
+            display_mixed_content(message["message"])
     else:
         # For all other messages, display normally
         with st.chat_message(message["role"]):
-            if "message" in message:
-                st.write(message["message"])
-            else:
-                st.write(message["message"])
-            # display_xml_content(message["content"])
+            st.write(message["message"])

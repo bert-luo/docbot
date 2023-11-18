@@ -17,3 +17,4 @@ config/secret_config.yml
 *.pyo
 __pycache__/
 
+*.env
