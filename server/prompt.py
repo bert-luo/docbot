@@ -47,4 +47,3 @@ base_prompt = """
     based on these guidelines, please try to answer the following prompt as best as you can:
 
     """
-

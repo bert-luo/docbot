@@ -4,12 +4,14 @@ from dotenv import load_dotenv
 import os
 import requests
 from bs4 import BeautifulSoup
+import streamlit as st
 
 from prompt import base_prompt
 
 
 load_dotenv()
 COHERE_API_KEY = os.getenv("COHERE_API_KEY")
+COHERE_API_KEY = st.secrets["COHERE_API_KEY"]
 co = cohere.Client(COHERE_API_KEY)
 
 def embed_texts(texts: list[str]): 
