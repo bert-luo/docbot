@@ -54,6 +54,7 @@ library = st.selectbox(
         "Langchain",
         "Tensorflow",
         "Xgboost",
+        "Streamlit"
         )
 )
 
