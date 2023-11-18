@@ -2,7 +2,7 @@ from context import download_embeddings
 import pandas as pd
 import sys
 
-from llm import embed_texts
+from server.llm import embed_texts
 from db import get_weaviate_client, create_weaviate_index
 
 from tqdm import tqdm

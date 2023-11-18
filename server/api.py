@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 
-from llm import chat_completion
+from server.llm import chat_completion
 
 app = FastAPI()
 
