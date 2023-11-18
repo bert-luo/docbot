@@ -5,7 +5,7 @@ import os
 import requests
 from bs4 import BeautifulSoup
 
-from server.prompt import base_prompt
+from prompt import base_prompt
 
 
 load_dotenv()
