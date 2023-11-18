@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 import os
 import json
 
-from server.llm import embed_texts # TODO: put inside function
+from llm import embed_texts # TODO: put inside function
 
 load_dotenv()
 WEAVIATE_API_KEY = os.getenv("WEAVIATE_API_KEY")
