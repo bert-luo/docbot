@@ -21,17 +21,7 @@ def embed_texts(texts: list[str]):
         model='embed-english-v3.0',
         input_type='search_document'
     )
-    return response
-
-def process_weave_response(response:str, library:str):
-    docs = []
-    # TODO: adjust for certainty 
-    for i in response['data']['Get'][library]:
-        temp = {}
-        for j in i:
-            temp[j] = i[j]
-        docs.append(temp)
-    return docs
+    return response.embeddings
         
 def chat_completion(query:str, library:str, history:list[dict]=None): 
     '''
@@ -41,15 +31,19 @@ def chat_completion(query:str, library:str, history:list[dict]=None):
     use query to retrieve relevant documents from Weaviate cluster,
     feed into cohere's chat endpoint and return its response
     '''
-    # TODO: fetch docs from weaviate, either by connector mode or hybrid search
     from db import query_weaviate
     weaviate_response = query_weaviate(query, library)
-    docs = process_weave_response(weaviate_response, library)
+    try: 
+        docs = weaviate_response['data']['Get'][library]
+    except: 
+        docs = []
+
     prompt = query # base_prompt +
     response = co.chat(  
         prompt,
         model='command',   # -nightly
         #max_tokens=200, # This parameter is optional. 
+        #return_preamble=True,
         preamble_override=base_prompt, 
         documents=docs,
         chat_history=history,
@@ -71,5 +65,7 @@ def chat_completion(query:str, library:str, history:list[dict]=None):
 
 if __name__ == "__main__":
     query = 'what kind of animal are pythons?'
+    #chat_completion(query, 'Document')
     print('RESPONSE: ', chat_completion(query, 'Document'))
+    #print(embed_texts(['test 1', 'i am gay']))
     

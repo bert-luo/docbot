@@ -63,7 +63,7 @@ def create_weaviate_index(index_name: str):
         },
         ]
     }
-
+    client = get_weaviate_client()
     client.schema.create_class(document_schema)
 
 def add_documents(documents, index_name): 
