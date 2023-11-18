@@ -23,7 +23,7 @@ st.set_page_config(page_title="Chatbot UI")
 
 # Header
 header = st.container()
-header.title("Docbot")
+header.title("PyLibrarian")
 header.write("""<div class='fixed-header'/>""", unsafe_allow_html=True)
 
 # Custom CSS for the sticky header
@@ -51,7 +51,7 @@ def wrap_in_xml(text, start, end, num):
 # Dropdown for selecting a library
 library = st.selectbox(
     "Select the library",
-    ("Langchain","Document", "pandas", "pytorch")
+    ("Langchain",)
 )
 
 # Initialize chat messages in session state if not present
@@ -60,6 +60,9 @@ if "messages" not in st.session_state:
 
 # User input for chat
 prompt = st.chat_input("Enter your message")
+
+if "source_count" not in st.session_state: 
+    st.session_state.source_count = 0
     
 # Process the prompt if it's not None
 if prompt:
@@ -73,23 +76,37 @@ if prompt:
     # Send the request to the FastAPI server
     data = fetch_data_from_api("chat/", payload=chat_request_payload)
     # Process the response...
-
+    # something to not print document if they have the same URL
     json_data = data
-    if "documents" in st.session_state and json_data['citations'] != None:
+    if "documents" in st.session_state:
+        if json_data['citations'] is not None:
+            for new_doc in json_data['documents']:
+                # Check if the new document's URL is already in the session state documents
+                if not any(doc['url'] == new_doc['url'] for doc in st.session_state.documents):
+                    # Append the new document if its URL is not found among the existing ones
+
+                    st.session_state.source_count += 1
+                    new_doc['id'] = f"Source {st.session_state.source_count}"
+                    st.session_state.documents.append(new_doc)
         with st.sidebar:
             for document in st.session_state.documents: 
-                st.write(f"**{document['title']}**")
-                st.info(f"Source: {document['id']}", icon="📄")
-                st.info(f"{document['snippet']}")
+                st.info(f"{document['id']}", icon="📄")
+                st.info(f"{document['url']}")
                 st.write("---")  # Separator line
 
     if "documents" not in st.session_state and json_data["citations"] != None:
-        st.session_state.documents = json_data["documents"]
+        st.session_state.documents = []
+        for new_doc in json_data['documents']:
+                # Check if the new document's URL is already in the session state documents
+                if not any(doc['url'] == new_doc['url'] for doc in st.session_state.documents):
+                    # Append the new document if its URL is not found among the existing ones
+                    st.session_state.source_count += 1
+                    new_doc['id'] = f"Source {st.session_state.source_count}"
+                    st.session_state.documents.append(new_doc)
         with st.sidebar:
             for document in st.session_state.documents: 
-                st.write(f"**{document['title']}**")
-                st.info(f"Source: {document['id']}", icon="📄")
-                st.info(f"{document['snippet']}")
+                st.info(f"{document['id']}", icon="📄")
+                st.info(f"{document['url']}")
                 st.write("---")  # Separator line
 
     st.session_state.messages.append({"role": "user", "message": prompt})
@@ -110,13 +127,16 @@ if prompt:
 def display_mixed_content(response):
     # Regular expression to find code blocks
     code_block_regex = re.compile(r'```(.*?)```', re.DOTALL)
+
+    # Find all code blocks and text blocks
     code_blocks = code_block_regex.findall(response)
     text_blocks = code_block_regex.split(response)
 
+    # Remove the code blocks from the text blocks
+    text_blocks = [block for i, block in enumerate(text_blocks) if i % 2 == 0]
+
     # Iterate through the text and code blocks, displaying each appropriately
     for text, code in zip(text_blocks, code_blocks + ['']):
-        # print("TEXT : " + str(text))
-        # print("CODE : " + str(code))
         if text.strip():
             st.write(text.strip())
         if code.strip():
