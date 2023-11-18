@@ -27,7 +27,6 @@ def create_documents(library_name:str):
     )
 
     df = load_dataset(library_name)
-    #df = df.head(100) # TODO: delete when done testing
     objects = [{'url': metadata['url'],'text': metadata['text']} for metadata in df['metadata'].values]
     texts = [obj['text'] for obj in objects]
     embeddings = embed_texts(texts)
@@ -43,15 +42,16 @@ def create_documents(library_name:str):
         .with_fields("meta { count }")
         .do()
     )
-    print("Object count: ", result["data"]["Aggregate"][library_name])
+    try:
+        print("Object count: ", result["data"]["Aggregate"][library_name])
+    except:
+        capitalized = library_name[0].upper() + library_name[1:]
+        print("Object count: ", result["data"]["Aggregate"][capitalized])
 
 if __name__ == "__main__":
-    #download_dataset('langchain')
-    client = get_weaviate_client()
-    client.schema.delete_class("Langchain") 
-    create_documents('Langchain')
-
-    '''df = load_dataset('langchain')
-    print(df.columns)
-    for col in df.columns: 
-        print(col, " : ", df[col].loc[69])'''
+    lib = 'streamlit'
+    download_dataset(lib)
+    if False:
+        client = get_weaviate_client()
+        client.schema.delete_class(lib) 
+    create_documents(lib)
