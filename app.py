@@ -50,8 +50,11 @@ def wrap_in_xml(text, start, end, num):
 
 # Dropdown for selecting a library
 library = st.selectbox(
-    "Select the library",
-    ("Langchain",)
+    "Select the library", (
+        "Langchain",
+        "Tensorflow",
+        "Xgboost",
+        )
 )
 
 # Initialize chat messages in session state if not present
