@@ -38,7 +38,7 @@ def chat_completion(query:str, library:str, history:list[dict]=None):
     except: 
         docs = []
 
-    prompt = query # base_prompt +
+    prompt = f'{library}\n' + query # base_prompt +
     response = co.chat(  
         prompt,
         model='command',   # -nightly
