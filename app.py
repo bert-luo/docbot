@@ -56,7 +56,7 @@ library = st.selectbox(
 
 # Initialize chat messages in session state if not present
 if "messages" not in st.session_state:
-    st.session_state.messages = [{"role": "assistant", "message": "How may I assist you today?"}]
+    st.session_state.messages = [{"role": "assistant", "message": "How may I assist you today?", "sources": []}]
 
 # User input for chat
 prompt = st.chat_input("Enter your message")
@@ -67,6 +67,7 @@ if "source_count" not in st.session_state:
 # Process the prompt if it's not None
 if prompt:
     # Construct the request payload
+    sources = []
     chat_request_payload = {
         "message": prompt,
         "history": st.session_state.messages,
@@ -86,6 +87,7 @@ if prompt:
                     # Append the new document if its URL is not found among the existing ones
 
                     st.session_state.source_count += 1
+                    sources.append(f"Source {st.session_state.source_count}")
                     new_doc['id'] = f"Source {st.session_state.source_count}"
                     st.session_state.documents.append(new_doc)
         with st.sidebar:
@@ -101,6 +103,7 @@ if prompt:
                 if not any(doc['url'] == new_doc['url'] for doc in st.session_state.documents):
                     # Append the new document if its URL is not found among the existing ones
                     st.session_state.source_count += 1
+                    sources.append(f"Source {st.session_state.source_count}")
                     new_doc['id'] = f"Source {st.session_state.source_count}"
                     st.session_state.documents.append(new_doc)
         with st.sidebar:
@@ -109,10 +112,10 @@ if prompt:
                 st.info(f"{document['url']}")
                 st.write("---")  # Separator line
 
-    st.session_state.messages.append({"role": "user", "message": prompt})
+    st.session_state.messages.append({"role": "user", "message": prompt, "sources": []})
 
     # Instead of adding the response as normal text, format it as code
-    st.session_state.messages.append({"role": "assistant", "message": data["text"]})
+    st.session_state.messages.append({"role": "assistant", "message": data["text"], "sources": sources})
     # if "citations" in json_data:
     #     for citation in json_data["citations"]:
     #         start = citation["start"]
@@ -148,6 +151,9 @@ for message in st.session_state.messages:
     if message["role"] == "assistant":
         with st.chat_message(message["role"]):
             display_mixed_content(message["message"])
+            if message["sources"] != []:
+                for m in message["sources"]:
+                    st.info(f"{m}")
     else:
         # For all other messages, display normally
         with st.chat_message(message["role"]):
