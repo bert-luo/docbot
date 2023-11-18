@@ -13,7 +13,7 @@ bs4==0.0.1
 cachetools==5.3.2
 certifi==2023.7.22
 cffi==1.15.1
-charset-normalizer==3.3.2
+charset-normalizer==2.0.0
 click==8.1.7
 cohere==4.35
 cryptography==41.0.5
@@ -66,7 +66,7 @@ tornado
 typing_extensions
 tzdata
 tzlocal==4.3.1
-urllib3
+urllib3==1.21.1
 uvicorn
 validators
 weaviate-client
