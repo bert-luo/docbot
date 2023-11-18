@@ -4,14 +4,13 @@ import xml.etree.ElementTree as ET
 import requests
 import json
 
-FASTAPI_BASE_URL = "http://localhost:8000"
+FASTAPI_BASE_URL = "http://localhost:8500"
 
 def fetch_data_from_api(endpoint, payload=None):
     if payload:
         response = requests.post(f"{FASTAPI_BASE_URL}/{endpoint}", json=payload)
     else:
         response = requests.get(f"{FASTAPI_BASE_URL}/{endpoint}")
-
     if response.status_code == 200:
         return response.json()
     else:
@@ -121,13 +120,16 @@ if prompt:
         "library": library
     }
 
+    print("HISTORY: " + str(chat_request_payload['history']))
     # Send the request to the FastAPI server
+    print(chat_request_payload)
     data = fetch_data_from_api("chat/", payload=chat_request_payload)
-
+    print(data)
     # Process the response...
 
     json_data = data
-    if "documents" in st.session_state and "citations" in json_data:
+    print("JSON DATA " + str(json_data))
+    if "documents" in st.session_state and json_data['citations'] != None:
         with st.sidebar:
             for document in st.session_state.documents: 
                 st.write(f"**{document['title']}**")
@@ -135,7 +137,7 @@ if prompt:
                 st.info(f"{document['snippet']}")
                 st.write("---")  # Separator line
 
-    if "documents" not in st.session_state and "citations" in json_data:
+    if "documents" not in st.session_state and json_data["citations"] != None:
         st.session_state.documents = json_data["documents"]
         with st.sidebar:
             for document in st.session_state.documents: 
@@ -144,19 +146,19 @@ if prompt:
                 st.info(f"{document['snippet']}")
                 st.write("---")  # Separator line
 
-    st.session_state.messages.append({"role": "user", "content": prompt})
+    st.session_state.messages.append({"role": "user", "message": prompt})
 
     # Instead of adding the response as normal text, format it as code
-    # st.session_state.messages.append({"role": "assistant", "content": data["message"]})
-    if "citations" in json_data:
-        for citation in json_data["citations"]:
-            start = citation["start"]
-            end = citation["end"]
-            wrapped_text = wrap_in_xml(json_data['text'], start, end, 1)
-            print(wrapped_text)
-        st.session_state.messages.append({"role": "assistant", "content": json_data['text']})
-    else:
-        st.session_state.messages.append({"role": "assistant", "content": json_data['text']})
+    st.session_state.messages.append({"role": "assistant", "message": data["text"]})
+    # if "citations" in json_data:
+    #     for citation in json_data["citations"]:
+    #         start = citation["start"]
+    #         end = citation["end"]
+    #         wrapped_text = wrap_in_xml(json_data['text'], start, end, 1)
+    #         print(wrapped_text)
+    #     st.session_state.messages.append({"role": "assistant", "content": json_data['text']})
+    # else:
+    #     st.session_state.messages.append({"role": "assistant", "content": json_data['text']})
     st.session_state.prompt = ""
 
 def display_xml_content(xml_content):
@@ -174,6 +176,15 @@ def display_xml_content(xml_content):
 
 # Display chat messages
 for message in st.session_state.messages:
-    if message["role"] == "assistant" and '<response>' in message["message"]:
+    print(message)
+    if message["role"] == "assistant" and "message" in message and'<response>' in message["message"]:
         with st.chat_message(message["role"]):
-            display_xml_content(message["content"])
+            display_xml_content(message["message"])
+    else:
+        # For all other messages, display normally
+        with st.chat_message(message["role"]):
+            if "message" in message:
+                st.write(message["message"])
+            else:
+                st.write(message["message"])
+            # display_xml_content(message["content"])
