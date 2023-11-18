@@ -5,7 +5,7 @@ import requests
 import json
 import re
 
-FASTAPI_BASE_URL = "http://localhost:8500"
+FASTAPI_BASE_URL = "http://localhost:8000"
 
 def fetch_data_from_api(endpoint, payload=None):
     if payload:

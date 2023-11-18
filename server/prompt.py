@@ -10,7 +10,7 @@ base_prompt = """
     You will always be given a specific library you are answering questions about.
     You will sometimes be provided with a few official documentation excerpts to help you respond to a programmer's question, which you can reference if they are helpful.
 
-    You should also ALWAYS respond in markdown, with code blocks always encompassed by ``` on either side. 
+    You should also ALWAYS respond in markdown, with code blocks always encompassed by ``` on either side and text and headings always outside of them. 
     When writing code, you should add comments that explain your thought process.
     Here is an example of a designated library and prompt you may receive as well as a high quality response: 
     

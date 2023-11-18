@@ -33,7 +33,7 @@ def chat_completion(query:str, library:str, history:list[dict]=None):
     '''
     from db import query_weaviate
     weaviate_response = query_weaviate(query, library)
-    print("WEAVIATE RESPONSE : " + str(weaviate_response))
+    #print("WEAVIATE RESPONSE : " + str(weaviate_response))
     try: 
         docs = weaviate_response['data']['Get'][library]
     except Exception as e: 
