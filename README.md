@@ -13,7 +13,9 @@ Pylibrarian is a special chatbot that solves all of these headaches by granting 
 
 Pylibrarian was built by processing, embedding (using *cohere.embed*), and storing documentation pages into *Weaviate*’s vector database, with each library having it's own vector index. Upon a user query with a specified library, we can semantically search for the most relevant pages of documentation to that query. Using Cohere’s chat endpoint’s *document mode*, the chatbot synthesizes a response citing the documents, leading to far more consistent, grounded responses.
 
-The most imortant part of this process was wrangling the data- AKA finding a scalable way to find, process, embed, and store every last page of documentaiton for a library. We did this by learning about webcrawling, sitemaps, etc. as well as finding existing datasets of software documentation people had already 'wrangled' 
+The most imortant part of this process was wrangling the data- AKA finding a scalable way to find, process, embed, and store every last page of documentaiton for a library. We did this by learning about webcrawling, sitemaps, etc. as well as finding existing datasets of software documentation people had already 'wrangled'. 
+
+Currently, in our prototype, we have completely embedded and stored the complete set of online documentation for 4 AI-related Python libraries into Weaviate, with ~15000 documents per library. We felt that this was suffcient for the purposes of the hackathon's prototype, although the process to add more would be very straightforward. Currently, our internal processing + embedding pipeline only takes minutes per library.
 
 
 ## What's Next for PyLibrarian
